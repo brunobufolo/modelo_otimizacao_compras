@@ -51,12 +51,12 @@ ESCOLHA_MERCADOS = PASTA_SAIDA / "Escolha_Mercados.xlsx"
 RESULTADO_OTIMO = PASTA_SAIDA / "Resultado_Otimo_Listas.xlsx"
 
 # Script 03 (Top N)
-ESCOLHA_MERCADOS_TOPN = PASTA_SAIDA / "Escolha_Mercados_TOP_N.xlsx"
-RESULTADO_OTIMO_TOPN = PASTA_SAIDA / "Resultado_Otimo_Listas_TOP_N.xlsx"
+ESCOLHA_MERCADOS_TOP_N = PASTA_SAIDA / "Escolha_Mercados_Top_N.xlsx"
+RESULTADO_OTIMO_TOP_N = PASTA_SAIDA / "Resultado_Otimo_Listas_TOP_N.xlsx"
 
 # Script 04
 INDICADORES = PASTA_SAIDA / "Indicadores_Resumo.xlsx"
-INDICADORES_TOPN = PASTA_SAIDA / "Indicadores_Resumo_TOP_N.xlsx"
+INDICADORES_TOP_N = PASTA_SAIDA / "Indicadores_Resumo_TOP_N.xlsx"
 
 # Script 05 (Brute Force / validação)
 BRUTE_FORCE = PASTA_SAIDA / "Brute_Force_Solucoes.xlsx"
