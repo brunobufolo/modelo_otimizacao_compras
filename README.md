@@ -107,6 +107,4 @@ A sensibilidade ao custo logístico é testada com fatores de 0,25 a 2,5 (coluna
 
 > CARDOSO, B. H. B.; FORTUNATO, M. H. T. *Modelo de otimização de compras domésticas baseado em preços, distância e custos de deslocamento*. Trabalho de Conclusão de Curso (MBA em Data Science e Analytics) – USP/Esalq, 2026.
 
-## Licença
 
-Defina a licença ao criar o repositório (sugestão: MIT para o código). Os dados de preços refletem uma coleta pontual e têm caráter acadêmico.
