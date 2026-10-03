@@ -3,14 +3,16 @@
 # =========================================================
 
 # Este arquivo tem como finalidade construir a matriz de
-# deslocamento entre os pontos considerados no estudo, que servirá como base auxiliar de forma a facilitar cálculos posteriores.
+# deslocamento entre os pontos considerados no estudo, que
+# servirá como base auxiliar de forma a facilitar cálculos
+# posteriores.
 # contemplando:
-
+#
 # 1. Pontos de partida → Mercados
 # 2. Mercados → Mercados
 
 # A matriz resultante contém, para cada par de pontos,
-# a distância estimada e o respectivo tempo de deslocamento.
+# a distância estimada.
 
 # A distância é inicialmente calculada pelo método de
 # Haversine, que determina a distância em linha reta entre
@@ -20,12 +22,10 @@
 # efetivamente realizado pela malha viária urbana, é aplicado
 # posteriormente um fator de aproximação da malha urbana.
 
-# O tempo de deslocamento é estimado a partir da distância
-# ajustada, da velocidade média adotada e do fator de trânsito.
-
 # Esta matriz constitui uma das bases utilizadas nos scripts
 # posteriores para calcular o custo de deslocamento das
 # diferentes soluções de compra.
+
 
 #%%
 # =========================================================
@@ -52,6 +52,7 @@ from config import BASE_FONTE, MATRIZ_ROTAS
 caminho_excel = BASE_FONTE
 output = MATRIZ_ROTAS
 
+
 #%%
 # =========================================================
 # LEITURA DAS ABAS
@@ -61,6 +62,7 @@ output = MATRIZ_ROTAS
 
 # São utilizadas as coordenadas geográficas de cada mercado
 # para posteriormente calcular as distâncias entre os pontos.
+
 df_mercados = pd.read_excel(
     caminho_excel,
     sheet_name="Base Mercado")
@@ -70,6 +72,7 @@ df_mercados = pd.read_excel(
 
 # Cada ponto representa uma possível localização de origem
 # para o consumidor realizar a compra.
+
 df_partidas = pd.read_excel(
     caminho_excel,
     sheet_name="Pontos de Partida")
@@ -85,6 +88,7 @@ df_partidas = pd.read_excel(
 # Essa padronização reduz o risco de erros decorrentes de
 # espaços acidentais nos nomes das variáveis utilizadas
 # posteriormente no código.
+
 df_mercados.columns = (
     df_mercados.columns
     .str.strip())
@@ -99,9 +103,9 @@ df_partidas.columns = (
 # HAVERSINE
 # =========================================================
 
-# Calcula a distância geodésica (linha mais curta que une dois pontos em uma superfície curva)
-# aproximada entre dois pontos
-# utilizando suas coordenadas de latitude e longitude.
+# Calcula a distância geodésica (linha mais curta que une
+# dois pontos em uma superfície curva) aproximada entre dois
+# pontos utilizando suas coordenadas de latitude e longitude.
 
 # O método de Haversine considera a curvatura da Terra e
 # fornece a distância entre os pontos em linha reta sobre
@@ -111,19 +115,23 @@ df_partidas.columns = (
 # Posteriormente, ela é ajustada pelo fator de malha urbana
 # para representar de forma aproximada o deslocamento pela
 # infraestrutura viária.
+
 def haversine(lat1, lon1, lat2, lon2):
 
     # Raio médio da Terra em quilômetros.
+
     R = 6371
 
     # Diferenças entre as coordenadas dos dois pontos,
     # convertidas para radianos.
+
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
 
     # Componente da fórmula de Haversine responsável por
     # relacionar as diferenças de latitude e longitude
     # considerando a curvatura terrestre.
+
     a = (
         sin(dlat / 2) ** 2
         + cos(radians(lat1))
@@ -132,11 +140,13 @@ def haversine(lat1, lon1, lat2, lon2):
 
     # Converte o resultado anterior para o ângulo central
     # utilizado no cálculo da distância.
+
     c = 2 * atan2(
         sqrt(a),
         sqrt(1 - a))
     
     # Retorna a distância aproximada entre os pontos em km.
+
     return R * c
 
 
@@ -145,8 +155,8 @@ def haversine(lat1, lon1, lat2, lon2):
 # PARÂMETROS MODELO
 # =========================================================
 
-# Parâmetros utilizados para aproximar o deslocamento
-# urbano a partir da distância em linha reta.
+# Parâmetro utilizado para aproximar o deslocamento urbano
+# a partir da distância em linha reta.
 
 # ---------------------------------------------------------
 # FATOR_MALHA_URBANA
@@ -171,55 +181,25 @@ def haversine(lat1, lon1, lat2, lon2):
 # Distância Haversine × Fator de Malha Urbana
 
 # ---------------------------------------------------------
-# VELOCIDADE_MEDIA_KMH
-# ---------------------------------------------------------
-
-# Representa a velocidade média adotada para estimar o
-# tempo de deslocamento em ambiente urbano.
-
-# O parâmetro funciona como uma aproximação das condições
-# de circulação urbana, considerando que os deslocamentos
-# ocorrem predominantemente em vias sujeitas a limites
-# e condições de circulação urbana.
-
-# ---------------------------------------------------------
-# FATOR_TRANSITO
-# ---------------------------------------------------------
-
-# Representa um acréscimo no tempo estimado para considerar
-# o efeito das condições de circulação sobre o deslocamento,
-# incluindo:
-
-# - retenções;
-# - paradas;
-# - cruzamentos;
-# - variações no fluxo de veículos.
-
-# ---------------------------------------------------------
 # CALIBRAÇÃO / VALIDAÇÃO
 # ---------------------------------------------------------
 
-# Os parâmetros foram ajustados e posteriormente validados
-# por meio da comparação entre os tempos e distâncias
-# estimados pelo modelo e trajetos de referência obtidos
+# O parâmetro foi ajustado e posteriormente validado
+# por meio da comparação entre as distâncias estimadas
+# pelo modelo e trajetos de referência obtidos
 # no Google Maps para diferentes deslocamentos urbanos.
 
 # O objetivo dessa comparação foi avaliar se o modelo produz
-# estimativas compatíveis com condições reais de deslocamento.
+# estimativas compatíveis com as condições reais de
+# deslocamento.
 
 # A comparação não tem como objetivo reproduzir exatamente
-# o algoritmo utilizado pelo Google Maps, mas avaliar a
-# adequação dos parâmetros adotados para o contexto do estudo.
+# o algoritmo utilizado pelo Google Maps, mas avaliar
+# a adequação do parâmetro adotado para o contexto do estudo.
 
-# Fator Malha Urbana estava sendo usado como 1.60
+# Fator Malha Urbana estava sendo usado como 1.60 como parametro inicial, com isso comparamos vs resultado Google Maps
 
-# Afeta mais a distancia
 FATOR_MALHA_URBANA = 1.43
-
-VELOCIDADE_MEDIA_KMH = 30
-
-# Afeta mais o tempo até o local
-FATOR_TRANSITO = 0.83
 
 
 #%%
@@ -231,12 +211,13 @@ FATOR_TRANSITO = 0.83
 # arquivo de saída. Cada fator é multiplicado pela coluna
 # DISTANCIA_KM da matriz já calculada.
 
-# Isso NÃO altera o cálculo original da matriz (Haversine,
-# malha urbana, tempo, trânsito etc.) — é aplicado apenas
-# na etapa final de exportação, sobre o resultado já pronto.
+# Isso NÃO altera o cálculo original da matriz (Haversine
+# e malha urbana) — é aplicado apenas na etapa final de
+# exportação, sobre o resultado já pronto.
 
 # Basta adicionar ou remover fatores aqui para controlar
 # quantas colunas adicionais serão geradas.
+
 FATOR_025 = 0.25
 FATOR_05 = 0.5
 FATOR_1_25 = 1.25
@@ -246,9 +227,11 @@ FATOR_2 = 2
 FATOR_2_25 = 2.25
 FATOR_2_5 = 2.5
 
+
 # Dicionário usado na criação das colunas adicionais.
 # Chave = sufixo que entra no nome da coluna.
 # Valor = fator multiplicado na DISTANCIA_KM.
+
 FATORES_EXPORTACAO_ADICIONAL = {
     "Fator_025": FATOR_025,
     "Fator_05": FATOR_05,
@@ -257,7 +240,8 @@ FATORES_EXPORTACAO_ADICIONAL = {
     "Fator_1_75": FATOR_1_75,
     "Fator_2": FATOR_2,
     "Fator_2_25": FATOR_2_25,
-    "Fator_2_5": FATOR_2_5,}
+    "Fator_2_5": FATOR_2_5,
+}
 
 
 #%%
@@ -271,14 +255,12 @@ FATORES_EXPORTACAO_ADICIONAL = {
 # Fluxo do cálculo:
 
 # 1. Calcula a distância em linha reta pelo Haversine;
-# 2. Aplica o fator de malha urbana;
-# 3. Calcula o tempo com base na velocidade média;
-# 4. Aplica o fator de trânsito;
-# 5. Converte o tempo de horas para minutos.
+# 2. Aplica o fator de malha urbana.
 
-# O resultado final retorna apenas os indicadores necessários
+# O resultado final retorna apenas a distância necessária
 # para a construção da matriz de rotas.
-def calcular_rota_google_style(
+
+def calcular_rota(
     lat1,
     lon1,
     lat2,
@@ -287,8 +269,9 @@ def calcular_rota_google_style(
     # -----------------------------------------------------
     # ETAPA 1 — DISTÂNCIA HAVERSINE
     # -----------------------------------------------------
-    
+
     # Calcula a distância em linha reta entre os dois pontos.
+
     distancia_haversine = haversine(
         lat1,
         lon1,
@@ -299,57 +282,24 @@ def calcular_rota_google_style(
     # -----------------------------------------------------
     # ETAPA 2 — AJUSTE DA MALHA URBANA
     # -----------------------------------------------------
-    
+
     # Ajusta a distância Haversine para representar,
     # de forma aproximada, o percurso realizado pela
     # malha viária urbana.
+
     distancia_real = (
         distancia_haversine
         * FATOR_MALHA_URBANA)
 
 
     # -----------------------------------------------------
-    # ETAPA 3 — ESTIMATIVA DO TEMPO
-    # -----------------------------------------------------
-    
-    # Calcula o tempo necessário para percorrer a distância
-    # ajustada considerando a velocidade média adotada.
-    tempo_horas = (
-        distancia_real
-        / VELOCIDADE_MEDIA_KMH)
-
-
-    # -----------------------------------------------------
-    # ETAPA 4 — AJUSTE PELO TRÂNSITO
-    # -----------------------------------------------------
-    
-    # Aplica o fator de trânsito para representar o impacto
-    # estimado das condições de circulação urbana sobre o
-    # tempo de deslocamento.
-    tempo_horas = (
-        tempo_horas
-        * FATOR_TRANSITO)
-
-
-    # -----------------------------------------------------
-    # ETAPA 5 — CONVERSÃO PARA MINUTOS
-    # -----------------------------------------------------
-    
-    # Converte o tempo estimado de horas para minutos.
-    tempo_min = (
-        tempo_horas
-        * 60)
-
-
-    # -----------------------------------------------------
     # RETORNO
     # -----------------------------------------------------
-    
-    # Retorna distância e tempo arredondados para duas
+
+    # Retorna a distância arredondada para duas
     # casas decimais.
-    return {
-        "distancia_km": round(distancia_real, 2),
-        "tempo_min": round(tempo_min, 2)}
+
+    return round(distancia_real, 2)
 
 
 #%%
@@ -362,6 +312,7 @@ def calcular_rota_google_style(
 
 # Cada registro posteriormente dará origem a uma linha
 # da matriz final de rotas.
+
 resultados_rotas = []
 
 
@@ -384,14 +335,16 @@ resultados_rotas = []
 # Partida 2 → Mercado 2
 
 # Dessa forma, cada possível origem possui uma distância
-# e um tempo estimados até todos os mercados.
+# estimada até todos os mercados.
+
 for _, partida in df_partidas.iterrows():
 
     for _, mercado in df_mercados.iterrows():
 
-        # Calcula a rota utilizando as coordenadas
+        # Calcula a distância utilizando as coordenadas
         # geográficas do ponto de partida e do mercado.
-        resultado = calcular_rota_google_style(
+
+        resultado = calcular_rota(
 
             partida["Latitude"],
             partida["Longitude"],
@@ -401,28 +354,34 @@ for _, partida in df_partidas.iterrows():
 
         # Armazena as informações da relação
         # PARTIDA → MERCADO.
-        #
-        # Além da distância e do tempo, são armazenadas
-        # informações de identificação da origem e destino.
+
+        # Além da distância, são armazenadas informações
+        # de identificação da origem e destino.
+
         resultados_rotas.append({
             "TIPO_VIAGEM":
             "PARTIDA_MERCADO",
+
             "TIPO_ORIGEM":
             "PARTIDA",
+
             "TIPO_DESTINO":
             "MERCADO",
+
             "ID_ORIGEM":
             partida["ID Endereço"],
+
             "NOME_ORIGEM":
             partida["Endereço Completo"],
+
             "ID_DESTINO":
             mercado["ID Mercado"],
+
             "NOME_DESTINO":
             mercado["Nome"],
+
             "DISTANCIA_KM":
-            resultado["distancia_km"],
-            "TEMPO_MIN":
-            resultado["tempo_min"]})
+            resultado})
 
 
 #%%
@@ -445,22 +404,29 @@ for _, partida in df_partidas.iterrows():
 # Mercado 2 → Mercado 3
 
 # A matriz resultante permite posteriormente calcular
-# o custo e o tempo de deslocamento entre mercados
-# consecutivos de uma determinada rota.
+# a distância entre mercados consecutivos de uma
+# determinada rota.
+
 for _, mercado_origem in df_mercados.iterrows():
+
     for _, mercado_destino in df_mercados.iterrows():
 
         # NÃO CALCULAR ROTA USANDO MESMO MERCADO
         # Uma rota de um mercado para ele mesmo não representa
         # um deslocamento válido e, portanto, não é incluída.
-        if (mercado_origem["ID Mercado"]
+
+        if (
+            mercado_origem["ID Mercado"]
             ==
-            mercado_destino["ID Mercado"]):
+            mercado_destino["ID Mercado"]
+        ):
             continue
 
 
-        # Calcula a distância e o tempo entre os dois mercados.
-        resultado = calcular_rota_google_style(
+        # Calcula a distância entre os dois mercados.
+
+        resultado = calcular_rota(
+
             mercado_origem["Latitude"],
             mercado_origem["Longitude"],
             mercado_destino["Latitude"],
@@ -469,25 +435,31 @@ for _, mercado_origem in df_mercados.iterrows():
 
         # Armazena as informações da relação
         # MERCADO → MERCADO.
+
         resultados_rotas.append({
             "TIPO_VIAGEM":
             "MERCADO_MERCADO",
+
             "TIPO_ORIGEM":
             "MERCADO",
+
             "TIPO_DESTINO":
             "MERCADO",
+
             "ID_ORIGEM":
             mercado_origem["ID Mercado"],
+
             "NOME_ORIGEM":
             mercado_origem["Nome"],
+
             "ID_DESTINO":
             mercado_destino["ID Mercado"],
+
             "NOME_DESTINO":
             mercado_destino["Nome"],
+
             "DISTANCIA_KM":
-            resultado["distancia_km"],
-            "TEMPO_MIN":
-            resultado["tempo_min"]})
+            resultado})
 
 
 #%%
@@ -499,6 +471,7 @@ for _, mercado_origem in df_mercados.iterrows():
 
 # Cada linha representa um deslocamento possível entre
 # dois pontos considerados no modelo.
+
 df_rotas = pd.DataFrame(
     resultados_rotas
 )
@@ -511,6 +484,7 @@ df_rotas = pd.DataFrame(
 
 # Reinicia o índice do DataFrame para garantir uma sequência
 # contínua de registros.
+
 df_rotas = df_rotas.reset_index(drop=True)
 
 
@@ -518,6 +492,7 @@ df_rotas = df_rotas.reset_index(drop=True)
 
 # O ID começa em 1 para facilitar a identificação dos
 # registros na base exportada.
+
 df_rotas["ID_ROTA"] = (
     df_rotas.index + 1)
 
@@ -535,11 +510,11 @@ df_rotas["ID_ROTA"] = (
 # - tipo de viagem;
 # - informações da origem;
 # - informações do destino;
-# - distância estimada;
-# - tempo estimado.
+# - distância estimada.
 
 # Essa padronização facilita a utilização da matriz
 # pelos scripts posteriores.
+
 df_rotas = df_rotas[
     [
         "ID_ROTA",
@@ -550,8 +525,7 @@ df_rotas = df_rotas[
         "TIPO_DESTINO",
         "ID_DESTINO",
         "NOME_DESTINO",
-        "DISTANCIA_KM",
-        "TEMPO_MIN"]]
+        "DISTANCIA_KM"]]
 
 
 #%%
@@ -561,13 +535,21 @@ df_rotas = df_rotas[
 
 # Cria a coluna-base de custo logístico usando fator 1.
 # As colunas originais permanecem inalteradas.
-df_rotas["Custo Logistico"] = df_rotas["DISTANCIA_KM"]
+
+df_rotas["Custo Logistico"] = (
+    df_rotas["DISTANCIA_KM"])
+
 
 # Cria uma coluna para cada fator configurado, sem alterar
 # DISTANCIA_KM nem gerar arquivos adicionais.
+
 for nome_fator, valor_fator in FATORES_EXPORTACAO_ADICIONAL.items():
-    df_rotas[f"Custo Logistico - {nome_fator}"] = (
-        df_rotas["DISTANCIA_KM"] * valor_fator)
+
+    df_rotas[
+        f"Custo Logistico - {nome_fator}"
+    ] = (
+        df_rotas["DISTANCIA_KM"]
+        * valor_fator)
 
 
 #%%
@@ -577,9 +559,13 @@ for nome_fator, valor_fator in FATORES_EXPORTACAO_ADICIONAL.items():
 
 # Exporta a única matriz com as colunas originais e todos
 # os cenários de custo logístico.
+
 # index=False evita que o índice interno do DataFrame seja
 # criado como uma coluna adicional.
-df_rotas.to_excel(output, index=False)
+
+df_rotas.to_excel(
+    output,
+    index=False)
 
 
 #%%
@@ -589,6 +575,7 @@ df_rotas.to_excel(output, index=False)
 
 # Exibe uma mensagem de conclusão do processamento
 # e informa o local do arquivo gerado.
+
 print("\n")
 print("=" * 100)
 print("PROCESSAMENTO FINALIZADO")
